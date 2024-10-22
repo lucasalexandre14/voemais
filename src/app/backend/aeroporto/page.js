@@ -11,25 +11,25 @@ import Pagina from "../components/Pagina";
 
 export default function Page() {
 
-    const [passageiros, setPassageiros] = useState([])
+    const [aeroportos, setAeroportos] = useState([])
 
     useEffect(() => {
-        setPassageiros(JSON.parse(localStorage.getItem('passageiros')) || [])
+        setAeroportos(JSON.parse(localStorage.getItem('aeroportos')) || [])
     }, [])
 
     function excluir(id) {
         if (confirm('Deseja realmente excluir o registro?')) {
-            const dados = passageiros.filter(item => item.id != id)
-            localStorage.setItem('passageiros', JSON.stringify(dados))
-            setPassageiros(dados)
+            const dados = aeroportos.filter(item => item.id != id)
+            localStorage.setItem('aeroportos', JSON.stringify(dados))
+            setAeroportos(dados)
         }
     }
 
     return (
-        <Pagina titulo="Passageiros">
+        <Pagina titulo="Aeroportos">
 
             <Link
-                href="/passageiros/form"
+                href="/aeroportos/form"
                 className="btn btn-primary mb-3"
             >
                 <FaPlusCircle /> Novo
@@ -40,16 +40,17 @@ export default function Page() {
                     <tr>
                         <th>#</th>
                         <th>Nome</th>
-                        <th>E-mail</th>
-                        <th>Telefone</th>
-                        <th>Dt. Nascimento</th>
+                        <th>Sigla</th>
+                        <th>País</th>
+                        <th>Uf</th>
+                        <th>Cidade</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {passageiros.map((item, i) => (
+                    {aeroportos.map((item, i) => (
                         <tr key={item.id}>
                             <td>
-                                <Link href={`/passageiros/form/${item.id}`}>
+                                <Link href={`/aeroportos/form/${item.id}`}>
                                     <FaRegEdit title="Editar" className="text-primary" />
                                 </Link>
                                 <MdDelete
@@ -59,9 +60,10 @@ export default function Page() {
                                 />
                             </td>
                             <td>{item.nome}</td>
-                            <td>{item.email}</td>
-                            <td>{item.telefone}</td>
-                            <td>{item.data_nascimento}</td>
+                            <td>{item.sigla}</td>
+                            <td>{item.pais}</td>
+                            <td>{item.uf}</td>
+                            <td>{item.cidade}</td>
                         </tr>
                     ))}
                 </tbody>

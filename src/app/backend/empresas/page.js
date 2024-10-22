@@ -1,35 +1,41 @@
 'use client'
 
 
+import Pagina from "@/app/components/Pagina";
+import apiVoos from "@/app/services/apiVoos";
 import Link from "next/link"
 import { useEffect, useState } from "react";
 import { Table } from "react-bootstrap"
 import { FaPlusCircle } from "react-icons/fa";
 import { FaRegEdit } from "react-icons/fa";
 import { MdDelete } from "react-icons/md";
-import Pagina from "../components/Pagina";
 
 export default function Page() {
 
-    const [passageiros, setPassageiros] = useState([])
+    const [empresas, setEmpresas] = useState([])
 
     useEffect(() => {
-        setPassageiros(JSON.parse(localStorage.getItem('passageiros')) || [])
+        carregarDados()
     }, [])
 
+    function carregarDados(){
+        apiVoos.get('empresas').then(resultado=>{
+            setEmpresas(resultado.data)
+        })
+    }
+console.log(empresas)
     function excluir(id) {
         if (confirm('Deseja realmente excluir o registro?')) {
-            const dados = passageiros.filter(item => item.id != id)
-            localStorage.setItem('passageiros', JSON.stringify(dados))
-            setPassageiros(dados)
+            apiVoos.delete('empresas/' + id)
+            carregarDados()
         }
     }
 
     return (
-        <Pagina titulo="Passageiros">
+        <Pagina titulo="Empresas">
 
             <Link
-                href="/passageiros/form"
+                href="/backend/empresas/form"
                 className="btn btn-primary mb-3"
             >
                 <FaPlusCircle /> Novo
@@ -40,28 +46,28 @@ export default function Page() {
                     <tr>
                         <th>#</th>
                         <th>Nome</th>
-                        <th>E-mail</th>
-                        <th>Telefone</th>
-                        <th>Dt. Nascimento</th>
+                        <th>Logo</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {passageiros.map((item, i) => (
-                        <tr key={item.id}>
+                    {empresas.map((item, i) => (
+                        <tr key={item._id}>
                             <td>
-                                <Link href={`/passageiros/form/${item.id}`}>
+                                <Link href={`/backend/empresas/form/${item._id}`}>
                                     <FaRegEdit title="Editar" className="text-primary" />
                                 </Link>
                                 <MdDelete
                                     title="Excluir"
                                     className="text-danger"
-                                    onClick={() => excluir(item.id)}
+                                    onClick={() => excluir(item._id)}
                                 />
                             </td>
                             <td>{item.nome}</td>
-                            <td>{item.email}</td>
-                            <td>{item.telefone}</td>
-                            <td>{item.data_nascimento}</td>
+                            <td>
+                                <a href={item.site} target="_blank">
+                                    <img src={item.logo} width={100} />
+                                </a>
+                            </td>
                         </tr>
                     ))}
                 </tbody>

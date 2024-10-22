@@ -3,7 +3,7 @@
 
 
 import Pagina from "@/app/components/Pagina";
-import EmpresaValidator from "@/validators/EmpresaValidator";
+import apiVoos from "@/app/services/apiVoos";
 import { Formik } from "formik";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -17,36 +17,45 @@ export default function Page({ params }) {
 
     const route = useRouter()
 
-    const empresas = JSON.parse(localStorage.getItem('empresas')) || []
-    const dados = empresas.find(item => item.id == params.id)
-    const empresa = dados || { nome: '', logo: '', site: '' }
+    const [empresa, setEmpresa] = useState({ nome: '', logo: '', site: '' })
 
     function salvar(dados) {
 
-        if (empresa.id) {
-            Object.assign(empresa, dados)
+        if (empresa._id) {
+            apiVoos.put('empresas/' + empresa._id, dados)
         } else {
-            dados.id = v4()
-            empresas.push(dados)
+            apiVoos.post('empresas', dados)
+            .then(resultado=>{
+                return route.push('/backend/empresas')
+            })
+            .catch(error=>{
+                alert(error.response.data.message)
+            })
         }
 
-        localStorage.setItem('empresas', JSON.stringify(empresas))
-        return route.push('/empresas')
     }
 
     return (
         <Pagina titulo="Empresa">
+
             <Formik
                 initialValues={empresa}
-                validationSchema={EmpresaValidator}
                 onSubmit={values => salvar(values)}
             >
                 {({
                     values,
                     handleChange,
                     handleSubmit,
-                    errors,
+                    setValues
                 }) => {
+
+                    useEffect(() => {
+                        apiVoos.get(`empresas/${params.id}`).then(resultado => {
+                            setValues(resultado.data)
+                            setEmpresa(resultado.data)
+                        })
+                    }, [])
+
                     return (
                         <Form>
                             <Form.Group className="mb-3" controlId="nome">
@@ -56,11 +65,7 @@ export default function Page({ params }) {
                                     name="nome"
                                     value={values.nome}
                                     onChange={handleChange('nome')}
-                                    isInvalid={errors.nome}
                                 />
-                                <Form.Control.Feedback type="invalid">
-                                    {errors.nome}
-                                </Form.Control.Feedback>
                             </Form.Group>
                             <Form.Group className="mb-3" controlId="logo">
                                 <Form.Label>Logo</Form.Label>
@@ -69,9 +74,7 @@ export default function Page({ params }) {
                                     name="logo"
                                     value={values.logo}
                                     onChange={handleChange('logo')}
-                                    isInvalid={errors.logo}
                                 />
-                                <div className="text-danger">{errors.logo}</div>
                             </Form.Group>
                             <Form.Group className="mb-3" controlId="site">
                                 <Form.Label>Site</Form.Label>
@@ -80,16 +83,14 @@ export default function Page({ params }) {
                                     name="site"
                                     value={values.site}
                                     onChange={handleChange('site')}
-                                    isInvalid={errors.site}
                                 />
-                                <div className="text-danger">{errors.site}</div>
                             </Form.Group>
                             <div className="text-center">
                                 <Button onClick={handleSubmit} variant="success">
                                     <FaCheck /> Salvar
                                 </Button>
                                 <Link
-                                    href="/empresas"
+                                    href="/backend/empresas"
                                     className="btn btn-danger ms-2"
                                 >
                                     <MdOutlineArrowBack /> Voltar
